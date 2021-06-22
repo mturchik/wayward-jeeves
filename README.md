@@ -1,2 +1,2 @@
 # wayward-jeeves
-Does things for me or makes things easier
+Does things or makes things easier

@@ -1,0 +1,11 @@
+{
+	"name": "Jeeves",
+	"description": "Does things or makes things easier",
+	"version": "0.1.0",
+	"author": "Cringe",
+	"file": "out/Jeeves",
+	"languages": [
+		"lang/english"
+	],
+	"waywardVersion": "2.10.6-beta"
+}
