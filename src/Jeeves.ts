@@ -1,19 +1,21 @@
 import Doodad from "game/doodad/Doodad";
 import { DoodadType } from "game/doodad/IDoodad";
-import { MessageType } from "game/entity/player/IMessageManager";
+import { MessageType, Source } from "game/entity/player/IMessageManager";
 import Player from "game/entity/player/Player";
 import { TileUpdateType } from "game/IGame";
-import { ITile } from "game/tile/ITerrain";
 import Message from "language/dictionary/Message";
 import { HookMethod } from "mod/IHookHost";
 import Mod from "mod/Mod";
 import Register from "mod/ModRegistry";
 import Component from "ui/component/Component";
 import { CheckButton } from "ui/component/CheckButton";
-import { Direction } from "utilities/math/Direction";
 import { IGlobalData, JeevesOptions } from "./IJeeves";
 import { Dictionary } from "language/Dictionaries";
 import Translation from "language/Translation";
+import { EventHandler } from "event/EventManager";
+import { EventBus } from "event/EventBuses";
+import { Direction } from "utilities/math/Direction";
+import MessageManager from "game/entity/player/MessageManager";
 
 export default class Jeeves extends Mod {
     @Mod.instance<Jeeves>("Jeeves")
@@ -54,76 +56,57 @@ export default class Jeeves extends Mod {
     @Register.message("ClosedDoor")
     public readonly closedDoorMsg: Message;
 
-    private isClosingDoor = false;
+    @EventHandler(EventBus.LocalPlayer, "moveComplete")
+    public moveComplete(player: Player) {
+        if (!this.globalData.CloseDoor) return;
 
-    @HookMethod
-    public onMove(player: Player, nextX: number, nextY: number, tile: ITile, direction: Direction): boolean | undefined {
-        if (this.canCloseDoor(player, tile)) {
-            // Set property to indicate we're trying to close the door, then actually do it
-            this.isClosingDoor = true;
-            this.closeDoor(player);
-        }
-
-        this.event.emitAsync
-        return undefined;
+        let tile = this.getTileBehindPlayer(player);
+        if (tile && tile.doodad && this.isClosableDoor(tile.doodad))
+            this.closeDoor(tile.doodad);
     }
 
     /**
-     * Determine if we can close a door for the player
-     * @param player Player to close the door for
-     * @param tile Tile player is moving to
-     * @returns If the tile has a door to close
+     * Get the tile that the player just moved from
+     * @param player Player who moved
+     * @returns Tile behind the player after movement
      */
-    private canCloseDoor(player: Player, tile: ITile): boolean {
-        if (!this.globalData.CloseDoor
-            || this.isClosingDoor
-            || tile.creature
-            || tile.npc
-            || tile.doodad?.blocksMove()) return false;
+    private getTileBehindPlayer(player: Player) {
+        let vector = Direction.vector(player.facingDirection);
+        return game.getTile(
+            player.fromX - vector.x,
+            player.fromY - vector.y,
+            player.z
+        );
+    }
+
+    /**
+     * Determine if we can close a door
+     * @param door Door doodad to close
+     * @returns If the doodad is a door that can be closed
+     */
+    private isClosableDoor(door: Doodad): boolean {
+        let dd = door?.description();
         // Check if doodad is a door or gate and is open (!closed)
-        let dd = player.getTile().doodad?.description();
         return dd && (dd.isDoor || dd.isGate) && !dd.isClosed || false;
     }
 
     /**
      * Attempt to close the door for the player
-     * @param player Player to close the door for
+     * @param door Door doodad to close
      */
-    private closeDoor(player: Player): void {
-        // Get the player's tile where the door should(?) be
-        let door = player.getTile().doodad;
-        if (!door) return;
+    private closeDoor(door: Doodad): void {
+        if (door.type == DoodadType.WoodenDoorOpen)
+            door.changeType(DoodadType.WoodenDoor);
+        else if (door.type == DoodadType.WoodenGateOpen)
+            door.changeType(DoodadType.WoodenGate);
+        else return;
 
-        // Only update when the door toggled
-        if (this.toggleDoor(door)) {
-            world.updateTile(door.x, door.y, door.z, door.getTile(), TileUpdateType.DoodadChangeType);
-            renderer?.render();
-            player.messages.type(MessageType.None).send(this.closedDoorMsg, door.getName());
-        }
-
-        this.isClosingDoor = false;
-    }
-
-    /**
-     * Attempts to toggle the doodad/door based on it's current type
-     * @param door Doodad that is the suspected door
-     * @returns Whether the door has been toggled
-     */
-    private toggleDoor(door: Doodad): boolean {
-        switch (door.type) {
-
-            case DoodadType.WoodenDoorOpen:
-                door.changeType(DoodadType.WoodenDoor);
-                return true;
-
-            case DoodadType.WoodenGateOpen:
-                door.changeType(DoodadType.WoodenGate);
-                return true;
-
-            // Add any future doors here
-
-            // Do not update tile and render when we don't change door
-            default: return false;
-        }
+        world.updateTile(door.x, door.y, door.z, door.getTile(), TileUpdateType.DoodadChangeType);
+        renderer?.render();
+        MessageManager.toAll(message => message
+            .source(Source.Action)
+            .type(MessageType.None)
+            .send(this.closedDoorMsg, door.getName())
+        );
     }
 }
