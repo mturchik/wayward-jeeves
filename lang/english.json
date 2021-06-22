@@ -1,9 +1,17 @@
 {
 	"extends": "English",
-	"dictionaries": {},
+	"dictionaries": {
+		"message": {
+			"ModJeevesInit": "Jeeves thanks you for your patronage. [ Version {0} ]",
+			"ModJeevesClosedDoor": "Jeeves has shut {0} behind you."
+		},
+		"ModJeevesOptions": {
+			"CloseDoor": "Close Door"
+		}
+	},
 	"pluralizationRules": {
-		"pluralRules": {},
-		"singularRules": {},
+		"pluralRules": [],
+		"singularRules": [],
 		"uncountables": [],
 		"irregularRules": [],
 		"articleRules": []
