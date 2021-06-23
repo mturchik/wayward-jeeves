@@ -1,11 +1,17 @@
 {
 	"name": "Jeeves",
 	"description": "Does things or makes things easier",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"author": "Cringe",
 	"file": "out/Jeeves",
 	"languages": [
 		"lang/english"
 	],
-	"waywardVersion": "2.10.6-beta"
+	"waywardVersion": "2.10.6-beta",
+	"allowUnlockingMilestones": true,
+	"multiplayer": "compatible",
+	"unloadable": true,
+	"tags": [
+		"Doodad"
+	]
 }

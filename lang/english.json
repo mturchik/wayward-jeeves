@@ -1,12 +1,16 @@
 {
 	"extends": "English",
 	"dictionaries": {
+		"bindable": {
+			"ModJeevesToggleGroundContainer": "Toggle Ground Container"
+		},
 		"message": {
 			"ModJeevesInit": "Jeeves thanks you for your patronage. [ Version {0} ]",
-			"ModJeevesClosedDoor": "Jeeves has shut {0} behind you."
+			"ModJeevesClosedDoor": "Jeeves has shut {0} behind you.",
+			"ModJeevesToggleGroundContainer": "Jeeves has {0} the items in front of you."
 		},
 		"ModJeevesOptions": {
-			"CloseDoor": "Close Door"
+			"CloseDoor": "Close doors after passing through"
 		}
 	},
 	"pluralizationRules": {

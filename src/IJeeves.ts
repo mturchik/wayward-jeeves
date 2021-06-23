@@ -1,6 +1,5 @@
 export enum JeevesOptions {
-    CloseDoor,
-    CloseDoorTooltip
+    CloseDoor
 }
 
 export interface IGlobalData {

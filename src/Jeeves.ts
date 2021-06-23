@@ -6,7 +6,7 @@ import { TileUpdateType } from "game/IGame";
 import Message from "language/dictionary/Message";
 import { HookMethod } from "mod/IHookHost";
 import Mod from "mod/Mod";
-import Register from "mod/ModRegistry";
+import Register, { Registry } from "mod/ModRegistry";
 import Component from "ui/component/Component";
 import { CheckButton } from "ui/component/CheckButton";
 import { IGlobalData, JeevesOptions } from "./IJeeves";
@@ -16,6 +16,9 @@ import { EventHandler } from "event/EventManager";
 import { EventBus } from "event/EventBuses";
 import { Direction } from "utilities/math/Direction";
 import MessageManager from "game/entity/player/MessageManager";
+import Bindable from "ui/input/Bindable";
+import { IInput } from "ui/input/IInput";
+import Bind from "ui/input/Bind";
 
 export default class Jeeves extends Mod {
     @Mod.instance<Jeeves>("Jeeves")
@@ -38,6 +41,9 @@ export default class Jeeves extends Mod {
 
     //#region Options
 
+    @Register.bindable("ToggleGroundContainer", IInput.key("KeyG"))
+    public readonly bindableToggleGroundContainer: Bindable;
+
     @Register.dictionary("Options", JeevesOptions)
     public readonly options: Dictionary;
 
@@ -52,6 +58,8 @@ export default class Jeeves extends Mod {
     }
 
     //#endregion
+
+    //#region Close Door
 
     @Register.message("ClosedDoor")
     public readonly closedDoorMsg: Message;
@@ -109,4 +117,34 @@ export default class Jeeves extends Mod {
             .send(this.closedDoorMsg, door.getName())
         );
     }
+
+    //#endregion
+
+    //#region Ground Container
+
+    @Register.message("ToggleGroundContainer")
+    public readonly toggleGroundContainerMsg: Message;
+
+    @Bind.onDown(Registry<Jeeves>().get("bindableToggleGroundContainer"))
+    public onToggleGroundContainer() {
+        let facingContainerItems = localPlayer.getFacingTile().doodad?.containedItems;
+        if (facingContainerItems !== undefined) return false;
+
+        let facingPoint = localPlayer.getFacingPoint()
+        let tileContainer = itemManager.getTileContainer(facingPoint.x, facingPoint.y, facingPoint.z);
+        if (tileContainer.containedItems.length == 0) return false;
+
+        if (oldui.isContainerOpen(tileContainer)) {
+            oldui.closeContainer(tileContainer);
+            localPlayer.messages.type(MessageType.None).send(this.toggleGroundContainerMsg, 'hidden');
+        } else {
+            oldui.openContainer(tileContainer);
+            localPlayer.messages.type(MessageType.None).send(this.toggleGroundContainerMsg, 'shown');
+        }
+
+        return true;
+    }
+
+    //#endregion
+
 }
