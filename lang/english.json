@@ -6,7 +6,7 @@
 		},
 		"message": {
 			"ModJeevesInit": "Jeeves thanks you for your patronage. [ Version {0} ]",
-			"ModJeevesClosedDoor": "Jeeves has shut {0} behind you.",
+			"ModJeevesClosedDoor": "Jeeves has shut {0} behind {1}.",
 			"ModJeevesToggleGroundContainer": "Jeeves has {0} the items in front of you."
 		},
 		"ModJeevesOptions": {

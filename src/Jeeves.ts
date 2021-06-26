@@ -64,13 +64,13 @@ export default class Jeeves extends Mod {
     @Register.message("ClosedDoor")
     public readonly closedDoorMsg: Message;
 
-    @EventHandler(EventBus.LocalPlayer, "moveComplete")
+    @EventHandler(EventBus.Players, "moveComplete")
     public moveComplete(player: Player) {
         if (!this.globalData.CloseDoor) return;
 
         let tile = this.getTileBehindPlayer(player);
         if (tile && tile.doodad && this.isClosableDoor(tile.doodad))
-            this.closeDoor(tile.doodad);
+            this.closeDoor(tile.doodad, player);
     }
 
     /**
@@ -101,8 +101,9 @@ export default class Jeeves extends Mod {
     /**
      * Attempt to close the door for the player
      * @param door Door doodad to close
+     * @param player Player who moved to close door
      */
-    private closeDoor(door: Doodad): void {
+    private closeDoor(door: Doodad, player: Player): void {
         if (door.type == DoodadType.WoodenDoorOpen)
             door.changeType(DoodadType.WoodenDoor);
         else if (door.type == DoodadType.WoodenGateOpen)
@@ -114,7 +115,7 @@ export default class Jeeves extends Mod {
         MessageManager.toAll(message => message
             .source(Source.Action)
             .type(MessageType.None)
-            .send(this.closedDoorMsg, door.getName())
+            .send(this.closedDoorMsg, door.getName(), player.name)
         );
     }
 
