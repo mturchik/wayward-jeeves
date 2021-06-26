@@ -9,7 +9,7 @@ import Mod from "mod/Mod";
 import Register, { Registry } from "mod/ModRegistry";
 import Component from "ui/component/Component";
 import { CheckButton } from "ui/component/CheckButton";
-import { IGlobalData, JeevesOptions } from "./IJeeves";
+import { IGlobalData, CheckboxOption, JeevesTranslations } from "./IJeeves";
 import { Dictionary } from "language/Dictionaries";
 import Translation from "language/Translation";
 import { EventHandler } from "event/EventManager";
@@ -19,6 +19,7 @@ import MessageManager from "game/entity/player/MessageManager";
 import Bindable from "ui/input/Bindable";
 import { IInput } from "ui/input/IInput";
 import Bind from "ui/input/Bind";
+import { ITooltip } from "ui/component/IComponent";
 
 export default class Jeeves extends Mod {
     @Mod.instance<Jeeves>("Jeeves")
@@ -44,18 +45,41 @@ export default class Jeeves extends Mod {
     @Register.bindable("ToggleGroundContainer", IInput.key("KeyG"))
     public readonly bindableToggleGroundContainer: Bindable;
 
-    @Register.dictionary("Options", JeevesOptions)
-    public readonly options: Dictionary;
-
     @Register.optionsSection
-    public optCloseDoor(section: Component) {
+    public optionSetup(section: Component) {
         section.append(
-            new CheckButton()
-                .setText(() => new Translation(this.options, JeevesOptions.CloseDoor))
-                .setRefreshMethod(() => !!this.globalData.CloseDoor)
-                .event.subscribe("toggle", (_, checked) => this.globalData.CloseDoor = checked)
+            this.createCheckButton(
+                JeevesTranslations.CloseDoor,
+                JeevesTranslations.CloseDoorTooltip,
+                CheckboxOption.CloseDoor)
+        ).append(
+            this.createCheckButton(
+                JeevesTranslations.ManageGroundContainer,
+                JeevesTranslations.ManageGroundContainerTooltip,
+                CheckboxOption.ManageGroundContainer)
         );
     }
+
+    private createCheckButton(t1: JeevesTranslations, t2: JeevesTranslations, opt: CheckboxOption) {
+        return new CheckButton()
+            .setText(() => this.getTranslation(t1))
+            .setTooltip(tooltip => this.addTooltipText(tooltip, t2))
+            .setRefreshMethod(() => !!this.globalData[opt])
+            .event.subscribe("toggle", (_, checked) => this.globalData[opt] = checked);
+    }
+
+    private addTooltipText(tooltip: ITooltip, t: JeevesTranslations): ITooltip {
+        return tooltip.addText(text => text.setText(this.getTranslation(t)));
+    }
+
+    //#endregion
+
+    //#region Translations
+
+    @Register.dictionary("Translations", JeevesTranslations)
+    public readonly translations: Dictionary;
+
+    private getTranslation(t: JeevesTranslations): Translation { return new Translation(this.translations, t); }
 
     //#endregion
 
@@ -66,7 +90,7 @@ export default class Jeeves extends Mod {
 
     @EventHandler(EventBus.Players, "moveComplete")
     public moveComplete(player: Player) {
-        if (!this.globalData.CloseDoor) return;
+        if (!this.globalData[CheckboxOption.CloseDoor]) return;
 
         let tile = this.getTileBehindPlayer(player);
         if (tile && tile.doodad && this.isClosableDoor(tile.doodad))
@@ -128,6 +152,8 @@ export default class Jeeves extends Mod {
 
     @Bind.onDown(Registry<Jeeves>().get("bindableToggleGroundContainer"))
     public onToggleGroundContainer() {
+        if (!this.globalData[CheckboxOption.ManageGroundContainer]) return false;
+
         let facingContainerItems = localPlayer.getFacingTile().doodad?.containedItems;
         if (facingContainerItems !== undefined) return false;
 

@@ -9,8 +9,11 @@
 			"ModJeevesClosedDoor": "Jeeves has shut {0} behind {1}.",
 			"ModJeevesToggleGroundContainer": "Jeeves has {0} the items in front of you."
 		},
-		"ModJeevesOptions": {
-			"CloseDoor": "Close doors after passing through"
+		"ModJeevesTranslations": {
+			"CloseDoor": "Enable Door Closing",
+			"CloseDoorTooltip": "This will instruct Jeeves to close doors after the player moves through them.",
+			"ManageGroundContainer": "Enable Ground Container",
+			"ManageGroundContainerTooltip": "This will instruct Jeeves to allow viewing of items on the ground in front of the player. Default Keybind: [ G ]"
 		}
 	},
 	"pluralizationRules": {

@@ -1,8 +1,9 @@
 {
 	"name": "Jeeves",
-	"description": "Does things or makes things easier",
-	"version": "0.4.1",
+	"description": "Does things to make your Wayward life easier",
+	"version": "0.4.2",
 	"author": "Cringe",
+	"github": "https://github.com/mturchik/wayward-jeeves",
 	"file": "out/Jeeves",
 	"languages": [
 		"lang/english"

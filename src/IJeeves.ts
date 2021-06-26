@@ -1,7 +1,19 @@
-export enum JeevesOptions {
-    CloseDoor
+
+export enum JeevesTranslations {
+    CloseDoor,
+    CloseDoorTooltip,
+
+    ManageGroundContainer,
+    ManageGroundContainerTooltip
 }
 
-export interface IGlobalData {
-    CloseDoor?: boolean;
+export enum CheckboxOption {
+    CloseDoor,
+    ManageGroundContainer
 }
+
+export type IGlobalData = {
+    [prop in CheckboxOption]: boolean;
+} & {
+
+};
