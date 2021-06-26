@@ -13,6 +13,7 @@
 	"multiplayer": "compatible",
 	"unloadable": true,
 	"tags": [
-		"Doodad"
+		"Doodad",
+		"User Interface"
 	]
 }
