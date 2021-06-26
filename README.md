@@ -1,9 +1,9 @@
 # Jeeves - *Does things to make your Wayward life easier*
 
 ## Features
-- [x] Close doors behind players (Original implementation from [HenryFBP](https://github.com/HenryFBP/wayward-close-da-door)]
-- [x] Manage items on ground like a container (Original implementation from [black-silence](https://github.com/black-silence/wayward-mod-pickuphelper)]
-- [ ] New item: Whistle to summon Jeeves (Idea from [World of Warcraft](https://www.wowhead.com/item=49040/jeeves)]
+- [x] Close doors behind players (Original implementation from [HenryFBP](https://github.com/HenryFBP/wayward-close-da-door))
+- [x] Manage items on ground like a container (Original implementation from [black-silence](https://github.com/black-silence/wayward-mod-pickuphelper))
+- [ ] New item: Whistle to summon Jeeves (Idea from [World of Warcraft](https://www.wowhead.com/item=49040/jeeves))
   - [ ] Able to summon NPC
   - [ ] NPC despawn/disappears after X turns
   - [ ] Buy/Sell items
