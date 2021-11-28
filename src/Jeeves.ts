@@ -1,19 +1,33 @@
+import { EventBus } from "event/EventBuses";
+import { EventHandler } from "event/EventManager";
 import Doodad from "game/doodad/Doodad";
-import MessageManager from "game/entity/player/MessageManager";
+import { DoodadType } from "game/doodad/IDoodad";
+import { EntityType } from "game/entity/IEntity";
+import { SkillType } from "game/entity/IHuman";
+import { Action } from "game/entity/action/Action";
+import { ActionType } from "game/entity/action/IAction";
 import Player from "game/entity/player/Player";
+import { TurnType } from "game/entity/player/IPlayer";
+import MessageManager from "game/entity/player/MessageManager";
+import { MessageType, Source } from "game/entity/player/IMessageManager";
+import { TileUpdateType, RenderSource } from "game/IGame";
+import { Quality } from "game/IObject";
+import { RecipeComponent } from "game/item/Items";
+import { ItemType, RecipeLevel, ItemTypeGroup } from "game/item/IItem";
+import { ITile } from "game/tile/ITerrain";
 import Message from "language/dictionary/Message";
+import { Dictionary } from "language/Dictionaries";
 import Translation from "language/Translation";
+import { HookMethod } from "mod/IHookHost";
 import Mod from "mod/Mod";
-import Register from "mod/ModRegistry";
+import Register, { Registry } from "mod/ModRegistry";
 import Component from "ui/component/Component";
+import { CheckButton } from "ui/component/CheckButton";
 import Bind from "ui/input/Bind";
 import Bindable from "ui/input/Bindable";
-import {
-    MessageType, IInput, CheckButton, ITile, Direction, DoodadType, Source, RecipeComponent, ItemType,
-    SkillType, RecipeLevel, ItemTypeGroup, Action, EntityType, TurnType, ActionType, Dictionary,
-    EventBus, EventHandler, HookMethod, Quality, Registry, RenderSource, TileUpdateType
-} from "./Barrel";
-import { IGlobalData, CheckboxOption, JeevesTranslations, ISaveData } from "./IJeeves";
+import { IInput } from "ui/input/IInput";
+import { Direction } from "utilities/math/Direction";
+import { IGlobalData, ISaveData, JeevesTranslations, CheckboxOption } from "./IJeeves";
 
 export default class Jeeves extends Mod {
     @Mod.instance<Jeeves>("Jeeves")
