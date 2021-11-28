@@ -1,20 +1,20 @@
 {
-	"name": "Jeeves",
-	"description": "Does things to make your Wayward life easier",
-	"version": "1.0.0",
-	"author": "Cringe",
-	"github": "https://github.com/mturchik/wayward-jeeves",
-	"file": "out/Jeeves",
-	"languages": [
-		"lang/english"
-	],
-	"waywardVersion": "2.10.7-beta",
-	"allowUnlockingMilestones": true,
-	"multiplayer": "compatible",
-	"unloadable": true,
-	"tags": [
-		"Doodad",
-		"User Interface"
-	],
-	"publishedFileId": "2528586982"
+    "name": "Jeeves",
+    "description": "Does things to make your Wayward life easier",
+    "version": "1.0.1",
+    "author": "Cringe",
+    "github": "https://github.com/mturchik/wayward-jeeves",
+    "file": "out/Jeeves",
+    "languages": [
+        "lang/english"
+    ],
+    "waywardVersion": "2.10.9-beta",
+    "allowUnlockingMilestones": true,
+    "multiplayer": "compatible",
+    "unloadable": true,
+    "tags": [
+        "Doodad",
+        "User Interface"
+    ],
+    "publishedFileId": "2528586982"
 }

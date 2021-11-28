@@ -1,25 +1,19 @@
 import Doodad from "game/doodad/Doodad";
-import { DoodadType } from "game/doodad/IDoodad";
-import { MessageType, Source } from "game/entity/player/IMessageManager";
-import Player from "game/entity/player/Player";
-import { TileUpdateType } from "game/IGame";
-import Message from "language/dictionary/Message";
-import { HookMethod } from "mod/IHookHost";
-import Mod from "mod/Mod";
-import Register, { Registry } from "mod/ModRegistry";
-import Component from "ui/component/Component";
-import { CheckButton } from "ui/component/CheckButton";
-import { IGlobalData, CheckboxOption, JeevesTranslations } from "./IJeeves";
-import { Dictionary } from "language/Dictionaries";
-import Translation from "language/Translation";
-import { EventHandler } from "event/EventManager";
-import { EventBus } from "event/EventBuses";
-import { Direction } from "utilities/math/Direction";
 import MessageManager from "game/entity/player/MessageManager";
-import Bindable from "ui/input/Bindable";
-import { IInput } from "ui/input/IInput";
+import Player from "game/entity/player/Player";
+import Message from "language/dictionary/Message";
+import Translation from "language/Translation";
+import Mod from "mod/Mod";
+import Register from "mod/ModRegistry";
+import Component from "ui/component/Component";
 import Bind from "ui/input/Bind";
-import { ITooltip } from "ui/component/IComponent";
+import Bindable from "ui/input/Bindable";
+import {
+    MessageType, IInput, CheckButton, ITile, Direction, DoodadType, Source, RecipeComponent, ItemType,
+    SkillType, RecipeLevel, ItemTypeGroup, Action, EntityType, TurnType, ActionType, Dictionary,
+    EventBus, EventHandler, HookMethod, Quality, Registry, RenderSource, TileUpdateType
+} from "./Barrel";
+import { IGlobalData, CheckboxOption, JeevesTranslations, ISaveData } from "./IJeeves";
 
 export default class Jeeves extends Mod {
     @Mod.instance<Jeeves>("Jeeves")
@@ -27,6 +21,9 @@ export default class Jeeves extends Mod {
 
     @Mod.globalData<Jeeves>()
     public globalData: IGlobalData;
+
+    @Mod.saveData<Jeeves>()
+    public saveData: ISaveData;
 
     //#region Init
 
@@ -46,30 +43,20 @@ export default class Jeeves extends Mod {
     public readonly bindableToggleGroundContainer: Bindable;
 
     @Register.optionsSection
-    public optionSetup(section: Component) {
-        section.append(
-            this.createCheckButton(
-                JeevesTranslations.CloseDoor,
-                JeevesTranslations.CloseDoorTooltip,
-                CheckboxOption.CloseDoor)
-        ).append(
-            this.createCheckButton(
-                JeevesTranslations.ManageGroundContainer,
-                JeevesTranslations.ManageGroundContainerTooltip,
-                CheckboxOption.ManageGroundContainer)
-        );
+    public optionSetup(section: Component): void {
+        let closeDoorBtn = this.createCheckButton(JeevesTranslations.CloseDoor, JeevesTranslations.CloseDoorTooltip, CheckboxOption.CloseDoor);
+        section.append(closeDoorBtn.element);
+
+        let groundContainerBtn = this.createCheckButton(JeevesTranslations.ManageGroundContainer, JeevesTranslations.ManageGroundContainerTooltip, CheckboxOption.ManageGroundContainer);
+        section.append(groundContainerBtn.element);
     }
 
-    private createCheckButton(t1: JeevesTranslations, t2: JeevesTranslations, opt: CheckboxOption) {
+    private createCheckButton(text: JeevesTranslations, tooltipText: JeevesTranslations, opt: CheckboxOption): CheckButton {
         return new CheckButton()
-            .setText(() => this.getTranslation(t1))
-            .setTooltip(tooltip => this.addTooltipText(tooltip, t2))
+            .setText(() => this.getTranslation(text))
+            .setTooltip(tooltip => tooltip.addText(text => text.setText(this.getTranslation(tooltipText))))
             .setRefreshMethod(() => !!this.globalData[opt])
             .event.subscribe("toggle", (_, checked) => this.globalData[opt] = checked);
-    }
-
-    private addTooltipText(tooltip: ITooltip, t: JeevesTranslations): ITooltip {
-        return tooltip.addText(text => text.setText(this.getTranslation(t)));
     }
 
     //#endregion
@@ -79,7 +66,7 @@ export default class Jeeves extends Mod {
     @Register.dictionary("Translations", JeevesTranslations)
     public readonly translations: Dictionary;
 
-    private getTranslation(t: JeevesTranslations): Translation { return new Translation(this.translations, t); }
+    public getTranslation(t: JeevesTranslations): Translation { return new Translation(this.translations, t); }
 
     //#endregion
 
@@ -89,7 +76,7 @@ export default class Jeeves extends Mod {
     public readonly closedDoorMsg: Message;
 
     @EventHandler(EventBus.Players, "moveComplete")
-    public moveComplete(player: Player) {
+    public moveComplete(player: Player): void {
         if (!this.globalData[CheckboxOption.CloseDoor]) return;
 
         let tile = this.getTileBehindPlayer(player);
@@ -102,7 +89,7 @@ export default class Jeeves extends Mod {
      * @param player Player who moved
      * @returns Tile behind the player after movement
      */
-    private getTileBehindPlayer(player: Player) {
+    private getTileBehindPlayer(player: Player): ITile {
         let vector = Direction.vector(player.facingDirection);
         return game.getTile(
             player.fromX - vector.x,
@@ -135,7 +122,7 @@ export default class Jeeves extends Mod {
         else return;
 
         world.updateTile(door.x, door.y, door.z, door.getTile(), TileUpdateType.DoodadChangeType);
-        renderer?.render();
+        game.updateView(RenderSource.Mod, true);
         MessageManager.toAll(message => message
             .source(Source.Action)
             .type(MessageType.None)
@@ -151,7 +138,7 @@ export default class Jeeves extends Mod {
     public readonly toggleGroundContainerMsg: Message;
 
     @Bind.onDown(Registry<Jeeves>().get("bindableToggleGroundContainer"))
-    public onToggleGroundContainer() {
+    public onToggleGroundContainer(): boolean {
         if (!this.globalData[CheckboxOption.ManageGroundContainer]) return false;
 
         let facingContainerItems = localPlayer.getFacingTile().doodad?.containedItems;
@@ -174,4 +161,45 @@ export default class Jeeves extends Mod {
 
     //#endregion
 
+    @Register.item("ServantWhistle", {
+        use: [Registry<Jeeves>().get("actionBlowWhistle")],
+        recipe: {
+            components: [
+                RecipeComponent(ItemType.IronIngot, 7, 7, 7, false),
+                RecipeComponent(ItemType.Sailboat, 1, 1, 0, true),
+                RecipeComponent(ItemType.GoldCoins, 5, 5, 0, true),
+                RecipeComponent(ItemType.GoldenSextant, 1, 1, 0, true),
+            ],
+            skill: SkillType.Bartering,
+            level: RecipeLevel.Expert,
+            reputation: 1000
+        },
+        // disassemble: true,
+        durability: 1000,
+        weight: 10,
+        // worth: 2500,
+        groups: [
+            ItemTypeGroup.Tool,
+            ItemTypeGroup.Treasure
+        ],
+        imagePath: "/static/image/item/servantwhistle"
+    })
+    public servantWhistle: ItemType;
+
+    @Register.message("BlowWhistle")
+    public readonly blowWhistleMsg: Message;
+
+    @Register.action("BlowWhistle", new Action()
+        .setUsableBy(EntityType.Player)
+        .setPreExecutionHandler(action => {
+            action.setDelay(30);
+            action.setPassTurn(TurnType.Idle);
+        })
+        .setHandler(action => {
+            action.executor.messages.type(MessageType.None).send(Jeeves.INSTANCE.blowWhistleMsg);
+        }))
+    public readonly actionBlowWhistle: ActionType;
+
+    @Register.command("CreateWhistle")
+    public command(_player: Player, _args: string) { _player.createItemInInventory([this.servantWhistle], Quality.None, true); }
 }

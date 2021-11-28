@@ -1,10 +1,14 @@
+import { ItemType } from "game/item/IItem";
+import Item from "game/item/Item";
 
 export enum JeevesTranslations {
     CloseDoor,
     CloseDoorTooltip,
 
     ManageGroundContainer,
-    ManageGroundContainerTooltip
+    ManageGroundContainerTooltip,
+
+    ServantName
 }
 
 export enum CheckboxOption {
@@ -17,3 +21,7 @@ export type IGlobalData = {
 } & {
 
 };
+
+export interface ISaveData {
+    Bank: (Item | ItemType)[];
+}
