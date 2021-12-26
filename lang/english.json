@@ -4,27 +4,16 @@
         "message": {
             "ModJeevesInit": "Jeeves thanks you for your patronage. Version {0}",
             "ModJeevesClosedDoor": "Jeeves has shut {0} behind {1}.",
-            "ModJeevesToggleGroundContainer": "Jeeves has {0} the items in front of you.",
-            "ModJeevesBlowWhistle": "You blow on the whistle... and nothing happens."
+            "ModJeevesToggleGroundContainer": "Jeeves has {0} the items in front of you."
         },
         "ModJeevesTranslations": {
             "CloseDoor": "Enable Door Closing",
             "CloseDoorTooltip": "This will instruct Jeeves to close doors after the player moves through them.",
             "ManageGroundContainer": "Enable Ground Container",
-            "ManageGroundContainerTooltip": "This will instruct Jeeves to allow viewing of items on the ground in front of the player. Default Keybind: [ G ]",
-            "ServantName": "Jeeves"
-        },
-        "action": {
-            "ModJeevesBlowWhistle": "Blow Whistle"
+            "ManageGroundContainerTooltip": "This will instruct Jeeves to allow viewing of items on the ground in front of the player. Default Keybind: [ G ]"
         },
         "bindable": {
             "ModJeevesToggleGroundContainer": "Toggle Ground Container"
-        },
-        "command": {
-            "ModJeevesCreateWhistle": "CreateWhistle"
-        },
-        "item": {
-            "ModJeevesServantWhistle": "Servant Whistle"
         }
     }
 }
