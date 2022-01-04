@@ -1,25 +1,31 @@
 import { IGlobalData, JeevesTranslations, CheckboxOption } from "./IJeeves";
+import Mod from "mod/Mod";
+import Register, { Registry } from "mod/ModRegistry";
 import { EventBus } from "event/EventBuses";
 import { EventHandler } from "event/EventManager";
+import { RenderSource } from "renderer/IRenderer";
 import Doodad from "game/doodad/Doodad";
 import { DoodadType } from "game/doodad/IDoodad";
 import Player from "game/entity/player/Player";
-import MessageManager from "game/entity/player/MessageManager";
 import { MessageType, Source } from "game/entity/player/IMessageManager";
-import { ITile } from "game/tile/ITerrain";
-import Message from "language/dictionary/Message";
+import { ITile, ITileContainer } from "game/tile/ITerrain";
+import Item from "game/item/Item";
+import ItemManager from "game/item/ItemManager";
+import { IContainer } from "game/item/IItem";
+import Island from "game/island/Island";
 import Translation from "language/Translation";
-import Mod from "mod/Mod";
-import Register from "mod/ModRegistry";
+import Message from "language/dictionary/Message";
+import MessageManager from "game/entity/player/MessageManager";
 import Component from "ui/component/Component";
 import { CheckButton } from "ui/component/CheckButton";
 import Bindable from "ui/input/Bindable";
 import { IInput } from "ui/input/IInput";
 import GameScreen from "ui/screen/screens/GameScreen";
-import Dictionary from "/language/Dictionary";
+import Bind from "ui/input/Bind";
+import Dictionary from "language/Dictionary";
 import Vector2 from "utilities/math/Vector2";
-import Island from "game/island/Island";
-import { TileUpdateType } from "game/IGame";
+import Vector3 from "utilities/math/Vector3";
+import { Direction } from "utilities/math/Direction";
 
 export default class Jeeves extends Mod {
     @Mod.instance<Jeeves>("Jeeves")
@@ -56,11 +62,11 @@ export default class Jeeves extends Mod {
                 JeevesTranslations.CloseDoor,
                 JeevesTranslations.CloseDoorTooltip
             ).element,
-            // this.createCheckButton(
-            //     CheckboxOption.ManageGroundContainer,
-            //     JeevesTranslations.ManageGroundContainer,
-            //     JeevesTranslations.ManageGroundContainerTooltip
-            // ).element
+            this.createCheckButton(
+                CheckboxOption.ManageGroundContainer,
+                JeevesTranslations.ManageGroundContainer,
+                JeevesTranslations.ManageGroundContainerTooltip
+            ).element
         );
     }
 
@@ -83,24 +89,9 @@ export default class Jeeves extends Mod {
     public moveComplete(player: Player): void {
         if (!this.globalData[CheckboxOption.CloseDoor]) return;
 
-        let tile = this.getTileBehindPlayer(player);
+        let tile = this.getBehindTile(player);
         if (tile?.doodad && this.isClosableDoor(tile.doodad))
             this.closeDoor(tile.doodad, player);
-    }
-
-    /**
-     * Get the tile that the player just moved from
-     * @param player Player who moved
-     * @returns Tile behind the player after movement
-     */
-    private getTileBehindPlayer(player: Player): ITile | undefined {
-        let vector = Vector2.DIRECTIONS[player.facingDirection];
-        let island = this.getIsland(player);
-        return island?.getTile(
-            player.fromX - vector.x,
-            player.fromY - vector.y,
-            player.z
-        );
     }
 
     /**
@@ -126,8 +117,7 @@ export default class Jeeves extends Mod {
             door.changeType(DoodadType.WoodenGate);
         else return;
 
-        let island = this.getIsland(player);
-        island?.emitTileUpdate(door.getTile(), door.x, door.y, door.z, TileUpdateType.DoodadChangeType, true);
+        game.updateView(RenderSource.Mod, false, true);
 
         MessageManager.toAll(message => message
             .source(Source.Action)
@@ -136,48 +126,57 @@ export default class Jeeves extends Mod {
         );
     }
 
-    private getIsland(player: Player): Island | undefined {
-        return game.islands.active.find(i => i.players.has(player));
-    }
-
     //#endregion
 
     //#region Ground Container
 
-    /** Disabling the Ground Container functionality because I'd like to actually play the game and 2.11 broke how I was doing it before. */
+    @Bind.onDown(Registry<Jeeves>().get("bindableToggleGroundContainer"))
+    public onToggleGroundContainer(): boolean {
+        if (!this.globalData[CheckboxOption.ManageGroundContainer]) return false;
 
-    // @Register.message("ToggleGroundContainer")
-    // public readonly toggleGroundContainerMsg: Message;
+        let tileContainer = <ITileContainer>localPlayer.getFacingTile();
+        if (!tileContainer?.containedItems) return false;
 
-    // @Bind.onDown(Registry<Jeeves>().get("bindableToggleGroundContainer"))
-    // public onToggleGroundContainer(): boolean {
-    //     console.clear()
-    //     if (!this.globalData[CheckboxOption.ManageGroundContainer]) return false;
+        let isOpen = oldui.isContainerOpen(tileContainer);
+        if (isOpen) { oldui.closeContainer(tileContainer); }
+        else { oldui.openContainer(tileContainer, `${Direction[localPlayer.facingDirection]} Tile`); }
 
-    //     let island = this.getIsland(localPlayer);
-    //     // let v3 = localPlayer.getFacingPoint();
-    //     let tile = island?.getTileFromPoint(localPlayer.getFacingPoint());
-    //     console.log(tile);
-    //     console.log(<IContainer>tile)
-    //     let isOpen = oldui.isContainerOpen(<IContainer>tile);
-    //     console.log(isOpen);
+        return true;
+    }
 
-    //     // let tileContainer = island?.tileContainers.find(tc => tc.x == v3.x && tc.y == v3.y && tc.z == v3.z);
-    //     console.log(!tile?.containedItems?.length)
-    //     if (!tile?.containedItems?.length) return false;
+    @EventHandler(EventBus.ItemManager, "containerItemUpdate")
+    public itemMoved(host: ItemManager, item: Item, containerFrom: IContainer | undefined, containerFromPosition: Vector3 | undefined, containerTo: IContainer): void {
+        if (!this.globalData[CheckboxOption.ManageGroundContainer]) return;
 
-    //     if (oldui.isContainerOpen(<IContainer>tile)) {
-    //         oldui.closeContainer(<IContainer>tile);
-    //         localPlayer.messages.type(MessageType.None).send(this.toggleGroundContainerMsg, 'hidden');
-    //         console.log('hidden')
-    //     } else {
-    //         oldui.openContainer(<IContainer>tile, 'Ground');
-    //         localPlayer.messages.type(MessageType.None).send(this.toggleGroundContainerMsg, 'shown');
-    //         console.log('shown')
-    //     }
+        // Container no longer exists, close the ui
+        if (!containerFrom && containerFromPosition) {
+            let tileContainer = <ITileContainer>item.island?.getTileFromPoint(containerFromPosition);
+            if (tileContainer && oldui.isContainerOpen(tileContainer))
+                oldui.closeContainer(tileContainer);
+        }
 
-    //     return true;
-    // }
+        if (!containerFrom || (<ITileContainer>containerFrom).x || (<ITileContainer>containerTo).x)
+            game.updateView(RenderSource.Mod, false, true);
+    }
 
     //#endregion
+
+    private getIsland(player: Player): Island | undefined {
+        return game.islands.active.find(i => i.players.has(player));
+    }
+
+    /**
+     * Get the tile behind the player
+     * @param player Player
+     * @returns Tile behind the player
+     */
+    private getBehindTile(player: Player): ITile | undefined {
+        let vector = Vector2.DIRECTIONS[player.facingDirection];
+        return this.getIsland(player)?.getTile(
+            player.fromX - vector.x,
+            player.fromY - vector.y,
+            player.z
+        );
+    }
+
 }
