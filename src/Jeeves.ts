@@ -7,8 +7,8 @@ import { RenderSource } from "renderer/IRenderer";
 import Doodad from "game/doodad/Doodad";
 import { DoodadType } from "game/doodad/IDoodad";
 import Player from "game/entity/player/Player";
-import { MessageType, Source } from "game/entity/player/IMessageManager";
-import { ITile, ITileContainer } from "game/tile/ITerrain";
+import { ActionType } from "game/entity/action/IAction";
+import { ITile, ITileContainer, TerrainType } from "game/tile/ITerrain";
 import Item from "game/item/Item";
 import ItemManager from "game/item/ItemManager";
 import { IContainer } from "game/item/IItem";
@@ -16,35 +16,29 @@ import Island from "game/island/Island";
 import Translation from "language/Translation";
 import Message from "language/dictionary/Message";
 import MessageManager from "game/entity/player/MessageManager";
+import { MessageType, Source } from "game/entity/player/IMessageManager";
 import Component from "ui/component/Component";
 import { CheckButton } from "ui/component/CheckButton";
 import Bindable from "ui/input/Bindable";
 import { IInput } from "ui/input/IInput";
-import GameScreen from "ui/screen/screens/GameScreen";
 import Bind from "ui/input/Bind";
 import Dictionary from "language/Dictionary";
 import Vector2 from "utilities/math/Vector2";
 import Vector3 from "utilities/math/Vector3";
 import { Direction } from "utilities/math/Direction";
+import TileHelpers from "utilities/game/TileHelpers";
 
 export default class Jeeves extends Mod {
-    @Mod.instance<Jeeves>("Jeeves")
-    public static readonly INSTANCE: Jeeves;
+    @Mod.instance<Jeeves>("Jeeves") public static readonly INSTANCE: Jeeves;
 
-    @Mod.globalData<Jeeves>()
-    public globalData: IGlobalData;
+    @Mod.globalData<Jeeves>() public globalData: IGlobalData;
 
-    //#region Init
+    @Register.message("Init") public readonly initMsg: Message;
+    @Register.message("CloseDoor") public readonly closeDoorMsg: Message;
+    @Register.message("AutoPaddle") public readonly autoPaddleMsg: Message;
 
-    @Register.message("Init")
-    public readonly initMsg: Message;
-
-    @EventHandler(GameScreen, "show")
-    public onGameScreenVisible(): void {
-        localPlayer.messages.type(MessageType.Good).send(this.initMsg, modManager.getVersion(this.getIndex()));
-    }
-
-    //#endregion
+    @EventHandler(EventBus.Game, "play")
+    public onPlay(): void { localPlayer.messages.type(MessageType.Good).send(this.initMsg, modManager.getVersion(this.getIndex())); }
 
     //#region Options
 
@@ -66,6 +60,11 @@ export default class Jeeves extends Mod {
                 CheckboxOption.ManageGroundContainer,
                 JeevesTranslations.ManageGroundContainer,
                 JeevesTranslations.ManageGroundContainerTooltip
+            ).element,
+            this.createCheckButton(
+                CheckboxOption.AutoPaddle,
+                JeevesTranslations.AutoPaddle,
+                JeevesTranslations.AutoPaddleTooltip
             ).element
         );
     }
@@ -82,11 +81,8 @@ export default class Jeeves extends Mod {
 
     //#region Close Door
 
-    @Register.message("ClosedDoor")
-    public readonly closedDoorMsg: Message;
-
     @EventHandler(EventBus.Players, "moveComplete")
-    public moveComplete(player: Player): void {
+    public toggleDoorOnMoveComplete(player: Player): void {
         if (!this.globalData[CheckboxOption.CloseDoor]) return;
 
         let tile = this.getBehindTile(player);
@@ -122,7 +118,7 @@ export default class Jeeves extends Mod {
         MessageManager.toAll(message => message
             .source(Source.Action)
             .type(MessageType.None)
-            .send(this.closedDoorMsg, door.getName(), player.name)
+            .send(this.closeDoorMsg, door.getName(), player.name)
         );
     }
 
@@ -145,7 +141,7 @@ export default class Jeeves extends Mod {
     }
 
     @EventHandler(EventBus.ItemManager, "containerItemUpdate")
-    public itemMoved(host: ItemManager, item: Item, containerFrom: IContainer | undefined, containerFromPosition: Vector3 | undefined, containerTo: IContainer): void {
+    public onContainerItemUpdate(host: ItemManager, item: Item, containerFrom: IContainer | undefined, containerFromPosition: Vector3 | undefined, containerTo: IContainer): void {
         if (!this.globalData[CheckboxOption.ManageGroundContainer]) return;
 
         // Container no longer exists, close the ui
@@ -160,6 +156,35 @@ export default class Jeeves extends Mod {
     }
 
     //#endregion
+
+    //#region Auto Paddle
+
+    @EventHandler(EventBus.Players, "preMove")
+    public autoPaddleOnMoveComplete(player: Player, fromX: number, fromY: number, fromZ: number, fromTile: ITile, toX: number, toY: number, toZ: number, toTile: ITile): void {
+        if (!this.globalData[CheckboxOption.AutoPaddle]) return;
+        // Do nothing if player is already on a boat, already swimming, or not moving to a swimming position
+        if (player.vehicleItemReference || player.isSwimming() || !this.isSwimmableTile(toTile)) return;
+        // Find the best boat in the player inventory, and give it a paddling
+        let boat = player.island.items.getBestSafeItemInContainerByUse(player.inventory, ActionType.Paddle, true, true, false);
+        if (boat) {
+            player.messages.type(MessageType.None).send(this.autoPaddleMsg, boat.getName());
+            player.setPaddling(boat, false);
+        }
+    }
+
+    private isSwimmableTile(tile: ITile): boolean {
+        let tileTerrain = TileHelpers.getType(<ITile>tile);
+        return [
+            TerrainType.Seawater,
+            TerrainType.DeepSeawater,
+            TerrainType.FreshWater,
+            TerrainType.DeepFreshWater
+        ].some(tt => tt === tileTerrain);
+    }
+
+    //#endregion
+
+    //#region Misc Helper
 
     private getIsland(player: Player): Island | undefined {
         return game.islands.active.find(i => i.players.has(player));
@@ -179,4 +204,5 @@ export default class Jeeves extends Mod {
         );
     }
 
+    //#endregion
 }

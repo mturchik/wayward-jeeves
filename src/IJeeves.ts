@@ -3,12 +3,16 @@ export enum JeevesTranslations {
     CloseDoorTooltip,
 
     ManageGroundContainer,
-    ManageGroundContainerTooltip
+    ManageGroundContainerTooltip,
+
+    AutoPaddle,
+    AutoPaddleTooltip
 }
 
 export enum CheckboxOption {
     CloseDoor,
-    ManageGroundContainer
+    ManageGroundContainer,
+    AutoPaddle
 }
 
 export type IGlobalData = {

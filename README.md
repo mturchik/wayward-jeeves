@@ -7,6 +7,7 @@ My main goal with this mod is now to simply keep the features up to date, and ad
 ## Features
 - [x] Close doors behind players (Original implementation from [HenryFBP](https://github.com/HenryFBP/wayward-close-da-door))
 - [x] Manage items on ground like a container (Original implementation from [black-silence](https://github.com/black-silence/wayward-mod-pickuphelper))
+- [x] Automatically start paddling a boat in your inventory when stepping onto swimmable water
 
 ## Mod Developer Stuff
 - Wayward Modding Home - [Github](https://github.com/WaywardGame/waywardgame.github.io)

@@ -3,13 +3,16 @@
     "dictionaries": {
         "message": {
             "ModJeevesInit": "Jeeves thanks you for your patronage. Version {0}",
-            "ModJeevesClosedDoor": "Jeeves has shut {0} behind {1}."
+            "ModJeevesCloseDoor": "Jeeves has shut {0} behind {1}.",
+            "ModJeevesAutoPaddle": "Jeeves has retrieved {0} for you to use."
         },
         "ModJeevesTranslations": {
             "CloseDoor": "Enable Door Closing",
             "CloseDoorTooltip": "Jeeves will close doors after the player moves through them.",
             "ManageGroundContainer": "Enable Ground Container",
-            "ManageGroundContainerTooltip": "Jeeves will show items on the ground in front of the player as a container. Default Keybind: [ G ]"
+            "ManageGroundContainerTooltip": "Jeeves will show items on the ground in front of the player as a container. Default Keybind: [ G ]",
+            "AutoPaddle": "Enable Auto-Paddling",
+            "AutoPaddleTooltip": "Jeeves will make you start paddling a boat in your inventory when stepping onto swimmable water."
         },
         "bindable": {
             "ModJeevesToggleGroundContainer": "Toggle Ground Container"
