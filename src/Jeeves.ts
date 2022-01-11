@@ -1,4 +1,4 @@
-import { IGlobalData, JeevesTranslations, CheckboxOption } from "./IJeeves";
+import { IGlobalData, JeevesTranslations, CheckboxOption } from "./Models";
 import Mod from "mod/Mod";
 import Register, { Registry } from "mod/ModRegistry";
 import { EventBus } from "event/EventBuses";
@@ -163,13 +163,21 @@ export default class Jeeves extends Mod {
     public autoPaddleOnMoveComplete(player: Player, fromX: number, fromY: number, fromZ: number, fromTile: ITile, toX: number, toY: number, toZ: number, toTile: ITile): void {
         if (!this.globalData[CheckboxOption.AutoPaddle]) return;
         // Do nothing if player is already on a boat, already swimming, or not moving to a swimming position
-        if (player.vehicleItemReference || player.isSwimming() || !this.isSwimmableTile(toTile)) return;
+        if (this.shouldNotAutoPaddle(player, toX, toY, toZ, toTile)) return;
         // Find the best boat in the player inventory, and give it a paddling
         let boat = player.island.items.getBestSafeItemInContainerByUse(player.inventory, ActionType.Paddle, true, true, false);
         if (boat) {
             player.messages.type(MessageType.None).send(this.autoPaddleMsg, boat.getName());
+            player.island.items.moveToContainer(player, boat, player.inventory);
             player.setPaddling(boat, false);
         }
+    }
+
+    private shouldNotAutoPaddle(player: Player, toX: number, toY: number, toZ: number, toTile: ITile): boolean {
+        return !!player.vehicleItemReference
+            || player.isSwimming()
+            || !this.isSwimmableTile(toTile)
+            || !TileHelpers.isOpenTile(player.island, new Vector3(toX, toY, toZ), toTile);
     }
 
     private isSwimmableTile(tile: ITile): boolean {
@@ -178,7 +186,9 @@ export default class Jeeves extends Mod {
             TerrainType.Seawater,
             TerrainType.DeepSeawater,
             TerrainType.FreshWater,
-            TerrainType.DeepFreshWater
+            TerrainType.DeepFreshWater,
+            TerrainType.FreezingFreshWater,
+            TerrainType.FreezingSeawater
         ].some(tt => tt === tileTerrain);
     }
 

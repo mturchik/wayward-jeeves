@@ -1,14 +1,14 @@
 {
     "name": "Jeeves",
     "description": "Does things to make your Wayward life easier",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "author": "Cringe",
     "github": "https://github.com/mturchik/wayward-jeeves",
     "file": "out/Jeeves",
     "languages": [
         "lang/english"
     ],
-    "waywardVersion": "2.11.1-beta",
+    "waywardVersion": "2.11.2-beta",
     "allowUnlockingMilestones": true,
     "multiplayer": "compatible",
     "unloadable": true,
