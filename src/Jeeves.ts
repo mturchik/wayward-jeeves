@@ -196,6 +196,7 @@ export default class Jeeves extends Mod {
 
     //#region Misc Helper
 
+    /** Get the island the player is on from the game manager. The Island on the player does not hold all tiles, at the time of this writing */
     private getIsland(player: Player): Island | undefined {
         return game.islands.active.find(i => i.players.has(player));
     }
