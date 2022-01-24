@@ -8,7 +8,7 @@
     "languages": [
         "lang/english"
     ],
-    "waywardVersion": "2.11.2-beta",
+    "waywardVersion": "2.11.3-beta",
     "allowUnlockingMilestones": true,
     "multiplayer": "compatible",
     "unloadable": true,
